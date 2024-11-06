@@ -31,7 +31,8 @@ services:
     volumes:
       - .:/usr/src/app
       - ./certbot/conf/live/aayushparmar.com:/etc/letsencrypt/live/aayushparmar.com
-    ports: "3000:3000"
+    ports:
+      - "3000:3000"
     expose:
       - "3000"
     command: /bin/sh -c "npm install && node app.js"
