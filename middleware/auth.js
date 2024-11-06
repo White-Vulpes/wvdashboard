@@ -1,40 +1,36 @@
-'use strict';
-const fs = require('fs');
-var path = require('path');
-const jwt = require('jsonwebtoken');
-const jwtOptions = require('../keys/jwtOptions');
+const jwt = require("../middleware/jwt");
 
-/* The functionality of this middleware is to get the token from the header and check whether is it a valid token.
-If the token is valid the next middleware in the stack is called else Status 401 is sent
-*/
-
-module.exports = async function (req, res, next) {
-    //Get token from header
-    const token = req.header('our-app-token'); // KEY, the token should be sent in the header with this key
-
-    if (!token) {
-        return res.status(401).json({ message: 'No Token, Authorization denied' });
-    }
-
+const auth = {
+  checkAuth: (req, res, next) => {
     try {
-        const pathPublicKey = path.resolve('keys/', 'public.key')
-        const publicKEY = fs.readFileSync(pathPublicKey, 'utf8');
-
-        const verifyOptions = jwtOptions;
-        
-        await jwt.verify(token, publicKEY, verifyOptions, (error, decoded) => {
-            if (error) {
-                const message = 'Token is not valid'
-                res.status(401).json({ message });
-            }
-            else{
-                req.studentid = decoded.student.id;
-                next();
-            }
-        });
-    } catch (error) {
-        console.log('Something wrong with the auth middleware');
-        res.status(500).json({message:'Server Error'})
+      if (req.header("Authorization")) {
+        jwt.verifyToken(req.header("Authorization").split(" ")[1]);
+        next();
+      } else {
+        res.status(400).json({ message: "User not authorized" });
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(400).json({ message: "User not authorized" });
     }
-}
+  },
+  checkAuthWs: (ws, req) => {
+    try {
+      if (req.header("Authorization")) {
+        jwt.verifyToken(req.header("Authorization").split(" ")[1]);
+        return true;
+      } else {
+        ws.send("User not authorized");
+        ws.close();
+        return false;
+      }
+    } catch (e) {
+      console.log(e);
+      ws.send("User not authorized");
+      ws.close();
+      return false;
+    }
+  },
+};
 
+module.exports = auth;

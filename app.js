@@ -1,24 +1,17 @@
-const express = require('express');
-const connectDB = require('./config/db');
-const path = require('path');
+const express = require("express");
+require("@dotenvx/dotenvx").config();
+const cors = require("cors");
+const expressws = require("express-ws");
 
 const app = express();
 
-// Connect Database
-connectDB();
-
-// Init Middleware
 app.use(express.json({ extended: false }));
+app.use(
+  cors({ origin: ["https://aayushparmar.com", "http://localhost:3039"] })
+);
+expressws(app);
+app.use("/api", require("./routes/routes"));
 
-app.get('/', (req,res)=>{
-    res.send("hello world")
-})
-
-// Define Routes
-app.use('/api/login', require('./routes/api/login'));
-app.use('/api/signup', require('./routes/api/signup'));
-app.use('/api/protectedroute', require('./routes/api/protectedRoute'));
-
-const PORT = process.env.PORT //|| 5000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

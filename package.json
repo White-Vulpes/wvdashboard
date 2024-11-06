@@ -1,23 +1,32 @@
 {
-  "name": "auth_boiler_plate",
+  "name": "wvdashboard",
   "version": "1.0.0",
-  "description": "This is a boiler plate for implementing a Authentication using only JWT and no Passport",
+  "description": "wvdashboard",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "devstart": "nodemon app.js"
+    "start": "dotenvx run -f .env.prod -- node app.js",
+    "dev": "dotenvx run -f .env.dev -- nodemon app.js"
   },
-  "author": "ashiqsultan",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.666.0",
+    "@aws-sdk/lib-storage": "^3.678.0",
+    "@aws-sdk/xhr-http-handler": "^3.664.0",
+    "@dotenvx/dotenvx": "^1.21.0",
+    "@slack/web-api": "^7.7.0",
+    "@smithy/node-http-handler": "^3.2.5",
+    "aws-sdk": "^2.1691.0",
     "bcryptjs": "^2.4.3",
-    "dotenv": "^8.1.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-validator": "^6.2.0",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.7.1"
+    "express-ws": "^5.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "sharp": "^0.33.5",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "nodemon": "^1.19.2"
+    "nodemon": "^3.1.7"
   }
 }
