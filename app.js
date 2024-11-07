@@ -1,5 +1,5 @@
 const express = require("express");
-require("@dotenvx/dotenvx").config();
+require("@dotenvx/dotenvx").config({ path: `.env.${process.env.MODE}` });
 const cors = require("cors");
 const expressws = require("express-ws");
 require("colors");
@@ -8,7 +8,7 @@ const app = express();
 
 app.use(express.json({ extended: false }));
 app.use(
-  cors({ origin: ["https://aayushparmar.com", "http://localhost:3039"] })
+  cors({ origin: ["https://db.aayushparmar.com", "http://localhost:3039"] })
 );
 expressws(app);
 app.use("/api", (req, res, next) => {
