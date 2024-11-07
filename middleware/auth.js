@@ -10,7 +10,6 @@ const auth = {
         res.status(400).json({ message: "User not authorized" });
       }
     } catch (e) {
-      console.log(e);
       res.status(400).json({ message: "User not authorized" });
     }
   },
@@ -25,7 +24,6 @@ const auth = {
         return false;
       }
     } catch (e) {
-      console.log(e);
       ws.send("User not authorized");
       ws.close();
       return false;

@@ -2,6 +2,7 @@ const express = require("express");
 require("@dotenvx/dotenvx").config();
 const cors = require("cors");
 const expressws = require("express-ws");
+require("colors");
 
 const app = express();
 
@@ -10,6 +11,26 @@ app.use(
   cors({ origin: ["https://aayushparmar.com", "http://localhost:3039"] })
 );
 expressws(app);
+app.use("/api", (req, res, next) => {
+  const start = Date.now();
+
+  res.on("finish", () => {
+    const status = res.statusCode;
+    const statusColor =
+      status >= 200 && status < 300
+        ? status.toString().green
+        : status.toString().red;
+    const responseTime = Date.now() - start;
+
+    console.log(
+      `${req.method.yellow} ${req.path.cyan} ${statusColor} | ${
+        req.ip.magenta
+      } | ${responseTime.toString().blue} ms`
+    );
+  });
+
+  next();
+});
 app.use("/api", require("./routes/routes"));
 
 const PORT = process.env.PORT || 3000;

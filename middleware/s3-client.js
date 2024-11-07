@@ -25,7 +25,7 @@ const aws = {
       const data = await s3Client.send(new ListBucketsCommand({}));
       return data.Buckets;
     } catch (error) {
-      console.error("Error listing buckets:", error);
+      slack.sendErrorMessage(error, "aws.listBuckets", PRIORITY.HIGH);
       return {};
     }
   },
@@ -43,7 +43,7 @@ const aws = {
         data
       );
     } catch (error) {
-      console.error("Error deleting file:", error);
+      slack.sendErrorMessage(error, "aws.deleteFile", PRIORITY.HIGH);
     }
   },
 
@@ -66,7 +66,7 @@ const aws = {
       });
       return upload;
     } catch (error) {
-      console.error("Error creating file:", error);
+      slack.sendErrorMessage(error, "aws.createFile", PRIORITY.HIGH);
       return error;
     }
   },
@@ -80,7 +80,7 @@ const aws = {
       const data = await s3Client.send(new ListObjectsCommand(params));
       return data.Contents;
     } catch (error) {
-      console.error("Error listing files:", error);
+      slack.sendErrorMessage(error, "aws.getFiles", PRIORITY.HIGH);
     }
   },
 
@@ -97,7 +97,7 @@ const aws = {
       const data = await s3Client.send(new DeleteObjectsCommand(params));
       return data.Deleted.length;
     } catch (error) {
-      console.error("Error deleting files:", error);
+      slack.sendErrorMessage(error, "aws.deleteMultipleFiles", PRIORITY.HIGH);
       return 0;
     }
   },

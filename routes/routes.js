@@ -39,7 +39,7 @@ router.post("/test", (req, res) => {
   try {
     throw new TypeError("Cannot read property 'foo' of undefined");
   } catch (e) {
-    slack.sendErrorMessage(e.message, "fetchAdminQueries", PRIORITY.HIGH);
+    slack.sendErrorMessage(e, "fetchAdminQueries", PRIORITY.HIGH);
     res.status(200).json({ message: "success" });
   }
 });

@@ -2,13 +2,13 @@ const { WebClient } = require("@slack/web-api");
 const token = process.env.SLACK_BOT_TOKEN;
 const web = new WebClient(token);
 
-console.warn = () => {};
-
 const PRIORITY = {
   HIGH: "High",
   MEDIUM: "Medium",
   LOW: "Low",
 };
+
+console.warn = () => {};
 
 const slack = {
   sendMessage: async (channel, message) => {
@@ -22,7 +22,7 @@ const slack = {
     }
   },
 
-  sendErrorMessage: async (message, name, priority) => {
+  sendErrorMessage: async (e, name, priority) => {
     try {
       await web.chat.postMessage({
         channel: "#errors",
@@ -30,7 +30,7 @@ const slack = {
           {
             color: "#f00",
             title: `🚨 ${name} failed`,
-            text: message,
+            text: e.message,
             fields: [
               { value: "\u200B", short: false },
               {
@@ -44,8 +44,8 @@ const slack = {
           },
         ],
       });
-    } catch (e) {
-      console.error();
+    } catch (error) {
+      console.error(e);
     }
   },
 };

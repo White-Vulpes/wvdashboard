@@ -1,4 +1,4 @@
-const slack = require("./slack");
+const { slack, PRIORITY } = require("./slack");
 
 const url = "https://white-vulpes.hasura.app/v1/graphql";
 const adminSecret = process.env.X_HASURA_ADMIN_SECRET;
@@ -20,8 +20,7 @@ const hasura = {
 
       return await result.json();
     } catch (e) {
-      slack.sendMessage("#errors", "fetchAdminQueries - Failed");
-      console.log("fetchAdminQueries - Failed", e.message);
+      slack.sendErrorMessage(e, "hasura.fetchAdminQueries", PRIORITY.HIGH);
     }
   },
 };

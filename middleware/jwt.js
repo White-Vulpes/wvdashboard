@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
+const { slack, PRIORITY } = require("./slack");
 const privateKey = fs.readFileSync("privatekey.pem", "utf8");
 const publicKey = fs.readFileSync("publickey.pem", "utf8");
 
@@ -16,7 +17,6 @@ const jwtHelper = {
       const token = jwt.sign({ claims: claims }, privateKey, jwtOptions);
       return token;
     } catch (e) {
-      console.log(e);
       throw e;
     }
   },
@@ -25,7 +25,6 @@ const jwtHelper = {
       const data = jwt.verify(token, publicKey);
       return data;
     } catch (e) {
-      console.log(e);
       throw e;
     }
   },
