@@ -1,10 +1,11 @@
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
-const hasura = require("../../middleware/hasura");
-const jwtHelper = require("../../middleware/jwt");
-const aws = require("../../middleware/s3-client");
+const hasura = require("../helpers/hasura");
+const jwtHelper = require("../helpers/jwt");
+const aws = require("../helpers/s3-client");
 var _ = require("lodash");
 const { v4: uuidv4 } = require("uuid");
+const { AppError, ErrorTypes } = require("../types/errors");
 
 const api = {
   login: async (req, res) => {
@@ -27,7 +28,8 @@ const api = {
         }
       );
 
-      if (result.errors) res.status(500).json(result);
+      if (result.errors)
+        throw new AppError(ErrorTypes.DATABASE_ERROR, result.errors[0].message);
       else if (result.data.auth.length > 0) {
         let token = "";
         (await bcrypt.compare(
@@ -43,11 +45,22 @@ const api = {
               "X-Hasura-User-Id": result.data.auth[0].id,
             })),
             res.status(200).json({ token: token, success: true }))
-          : res.status(400).json({ message: "Password Mismatch" });
+          : (() => {
+              throw new AppError(
+                ErrorTypes.AUTHENTICATION_ERROR,
+                "User Not Authorized"
+              );
+            })();
       }
     } catch (error) {
-      console.error(`Error catched on post request ${error.message}`);
-      res.status(500).send("Server Error");
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.SERVER_ERROR,
+              "Internal Server Error"
+            ).sendResponse(res);
+          })();
     }
   },
 
@@ -73,7 +86,8 @@ const api = {
         }
       );
 
-      if (result.errors) res.status(500).json(result);
+      if (result.errors)
+        throw new AppError(ErrorTypes.DATABASE_ERROR, result.errors[0].message);
       else if (result.data.insert_auth.affected_rows > 0) {
         let token = "";
         token = jwtHelper.createToken({
@@ -87,8 +101,14 @@ const api = {
         res.status(200).json({ token: token, success: true });
       }
     } catch (error) {
-      console.error(`Error catched on post request ${error.message}`);
-      res.status(500).send("Server Error");
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.SERVER_ERROR,
+              "Internal Server Error"
+            ).sendResponse(res);
+          })();
     }
   },
 
@@ -121,7 +141,8 @@ const api = {
           notifications_limit: 10,
         }
       );
-      if (result.errors) res.status(400).json(result);
+      if (result.errors)
+        throw new AppError(ErrorTypes.DATABASE_ERROR, result.errors[0].message);
       else if (result.data.website.length > 0) {
         let notifications = result.data.website[0].notifications;
         let website_dashboards = result.data.website[0].website_dashboards;
@@ -132,11 +153,20 @@ const api = {
           notifications: notifications,
         });
       } else {
-        res.status(400).json({});
+        throw new AppError(
+          ErrorTypes.SERVICE_UNAVAILABLE,
+          "No Components Defined"
+        );
       }
-    } catch (e) {
-      console.error(`Error catched on /getDashboard request ${e.message}`);
-      res.status(500).send("Server Error");
+    } catch (error) {
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.SERVER_ERROR,
+              "Internal Server Error"
+            ).sendResponse(res);
+          })();
     }
   },
   deleteThumbnails: async (req, res, next) => {
@@ -149,14 +179,15 @@ const api = {
         )
       );
       next();
-    } catch (e) {
-      res.status(500).json({
-        errors: [
-          {
-            message: "Internal Server Error",
-          },
-        ],
-      });
+    } catch (error) {
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.SERVER_ERROR,
+              "Internal Server Error"
+            ).sendResponse(res);
+          })();
     }
   },
   deleteImages: async (req, res, next) => {
@@ -167,14 +198,15 @@ const api = {
       );
       req.body.affected_rows = result;
       next();
-    } catch (e) {
-      res.status(500).json({
-        errors: [
-          {
-            message: "Internal Server Error",
-          },
-        ],
-      });
+    } catch (error) {
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.SERVER_ERROR,
+              "Internal Server Error"
+            ).sendResponse(res);
+          })();
     }
   },
 
@@ -206,34 +238,17 @@ const api = {
             result.data.delete_images.affected_rows - req.body.affected_rows
           ),
         });
-      } else
-        res.status(400).json({
-          errors: [
-            {
-              message: "Error Occured",
-            },
-          ],
-        });
-    } catch (e) {
-      res.status(500).json({
-        errors: [
-          {
-            message: "Internal Server Error",
-          },
-        ],
-      });
+      } else throw new AppError(ErrorTypes.DATABASE_ERROR, "No Fields Found");
+    } catch (error) {
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.SERVER_ERROR,
+              "Internal Server Error"
+            ).sendResponse(res);
+          })();
     }
-  },
-  testSSEConnection: async (req, res) => {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.flushHeaders();
-    const inter = setInterval(() => res.write(`data: ${uuidv4()}\n\n`), 1000);
-    req.on("close", () => {
-      clearInterval(inter);
-      console.log("Closing Connection");
-    });
   },
 };
 

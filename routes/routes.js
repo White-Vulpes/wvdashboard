@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
-const api = require("./api/api");
+const api = require("../middleware/api");
 const auth = require("../middleware/auth");
-const wsapi = require("./ws/api");
-const { slack, PRIORITY } = require("../middleware/slack");
+const wsapi = require("../middleware/ws");
+const { slack, PRIORITY } = require("../helpers/slack");
 
 console.log(process.env.MODE);
 
@@ -34,15 +34,6 @@ router.post(
   api.deleteImages,
   api.deleteImagesDB
 );
-
-router.post("/test", (req, res) => {
-  try {
-    throw new TypeError("Cannot read property 'foo' of undefined");
-  } catch (e) {
-    slack.sendErrorMessage(e, "fetchAdminQueries", PRIORITY.HIGH);
-    res.status(200).json({ message: "success" });
-  }
-});
 
 //Websockets
 router.ws("/upload", wsapi.upload);

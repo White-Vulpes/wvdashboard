@@ -1,7 +1,7 @@
-const auth = require("../../middleware/auth");
-const hasura = require("../../middleware/hasura");
-const aws = require("../../middleware/s3-client");
-const utils = require("../../middleware/utils");
+const auth = require("./auth");
+const hasura = require("../helpers/hasura");
+const aws = require("../helpers/s3-client");
+const utils = require("../helpers/utils");
 const sharp = require("sharp");
 
 const wsapi = {

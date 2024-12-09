@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { slack, PRIORITY } = require("./slack");
 const privateKey = fs.readFileSync("privatekey.pem", "utf8");
 const publicKey = fs.readFileSync("publickey.pem", "utf8");
+const { AppError, ErrorTypes } = require("../types/errors");
 
 const jwtOptions = {
   issuer: "WVDashboard", // Issuer
@@ -16,16 +17,18 @@ const jwtHelper = {
     try {
       const token = jwt.sign({ claims: claims }, privateKey, jwtOptions);
       return token;
-    } catch (e) {
-      throw e;
+    } catch (error) {
+      slack.sendErrorMessage(error, "jwt.createToken", PRIORITY.HIGH);
+      throw new AppError(ErrorTypes.SERVER_ERROR, "Internal Server Error");
     }
   },
   verifyToken: (token) => {
     try {
       const data = jwt.verify(token, publicKey);
       return data;
-    } catch (e) {
-      throw e;
+    } catch (error) {
+      slack.sendErrorMessage(error, "jwt.verify", PRIORITY.HIGH);
+      throw new AppError(ErrorTypes.AUTHORIZATION_ERROR, "User not authorized");
     }
   },
 };

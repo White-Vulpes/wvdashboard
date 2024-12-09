@@ -1,4 +1,6 @@
 const sharp = require("sharp");
+const { slack, PRIORITY } = require("./slack");
+const { AppError, ErrorTypes } = require("../types/errors");
 
 const utils = {
   dataURItoBuffer: (dataURI) => {
@@ -7,7 +9,8 @@ const utils = {
       const buffer = Buffer.from(base64Data, "base64");
       return buffer;
     } catch (e) {
-      slack.sendErrorMessage(error, "utils.dataURItoBuffer", PRIORITY.HIGH);
+      slack.sendErrorMessage(e, "utils.dataURItoBuffer", PRIORITY.HIGH);
+      throw new AppError(ErrorTypes.SERVER_ERROR, "Internal Server Error");
     }
   },
 
@@ -20,7 +23,8 @@ const utils = {
         .toBuffer();
       return resizedBuffer;
     } catch (e) {
-      slack.sendErrorMessage(error, "utils.resizeImage", PRIORITY.HIGH);
+      slack.sendErrorMessage(e, "utils.resizeImage", PRIORITY.HIGH);
+      throw new AppError(ErrorTypes.SERVER_ERROR, "Internal Service Error");
     }
   },
 };

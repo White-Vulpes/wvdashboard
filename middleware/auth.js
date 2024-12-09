@@ -1,4 +1,5 @@
-const jwt = require("../middleware/jwt");
+const jwt = require("../helpers/jwt");
+const { AppError, ErrorTypes } = require("../types/errors");
 
 const auth = {
   checkAuth: (req, res, next) => {
@@ -7,10 +8,20 @@ const auth = {
         jwt.verifyToken(req.header("Authorization").split(" ")[1]);
         next();
       } else {
-        res.status(400).json({ message: "User not authorized" });
+        throw new AppError(
+          ErrorTypes.AUTHORIZATION_ERROR,
+          "User not authroized"
+        );
       }
     } catch (e) {
-      res.status(400).json({ message: "User not authorized" });
+      error instanceof AppError
+        ? error.sendResponse(res)
+        : (() => {
+            throw new AppError(
+              ErrorTypes.AUTHORIZATION_ERROR,
+              "User not authroized"
+            ).sendResponse(res);
+          })();
     }
   },
   checkAuthWs: (ws, req) => {

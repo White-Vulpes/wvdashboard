@@ -5,10 +5,11 @@ const {
   ListObjectsCommand,
   DeleteObjectsCommand,
 } = require("@aws-sdk/client-s3");
-
 const { Upload } = require("@aws-sdk/lib-storage");
-
+const { AppError, ErrorTypes } = require("../types/errors");
 const { NodeHttpHandler } = require("@smithy/node-http-handler");
+
+// TODO Redefine All error
 
 const s3Client = new S3Client({
   region: "eu-north-1",
@@ -26,7 +27,7 @@ const aws = {
       return data.Buckets;
     } catch (error) {
       slack.sendErrorMessage(error, "aws.listBuckets", PRIORITY.HIGH);
-      return {};
+      throw new AppError(ErrorTypes.DATABASE_ERROR, "Error Occured");
     }
   },
 
@@ -44,6 +45,7 @@ const aws = {
       );
     } catch (error) {
       slack.sendErrorMessage(error, "aws.deleteFile", PRIORITY.HIGH);
+      throw new AppError(ErrorTypes.DATABASE_ERROR, "Error Occured");
     }
   },
 
@@ -67,7 +69,7 @@ const aws = {
       return upload;
     } catch (error) {
       slack.sendErrorMessage(error, "aws.createFile", PRIORITY.HIGH);
-      return error;
+      throw new AppError(ErrorTypes.DATABASE_ERROR, "Error Occured");
     }
   },
 
@@ -81,6 +83,7 @@ const aws = {
       return data.Contents;
     } catch (error) {
       slack.sendErrorMessage(error, "aws.getFiles", PRIORITY.HIGH);
+      throw new AppError(ErrorTypes.DATABASE_ERROR, "Error Occured");
     }
   },
 
@@ -98,7 +101,7 @@ const aws = {
       return data.Deleted.length;
     } catch (error) {
       slack.sendErrorMessage(error, "aws.deleteMultipleFiles", PRIORITY.HIGH);
-      return 0;
+      throw new AppError(ErrorTypes.EXTERNAL_SERVICE_ERROR, "Error Occured");
     }
   },
 };
